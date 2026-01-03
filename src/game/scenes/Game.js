@@ -168,8 +168,8 @@ export class Game extends Scene
 
     resetGame()
     {
-        this.bird.x = 100;
-        this.birdY = 300;
+        this.bird.x = this.scale.width * 0.15;
+        this.birdY = this.scale.height / 2;
         this.birdVy = 0;
         this.birdAngle = 0;
         this.isAnimating = false;
@@ -309,9 +309,10 @@ export class Game extends Scene
         }
         if (this.isTransitioning) {
             this.titleOffset += 1000 * dt;
-            this.bird.x = this.bird.x + (100 - this.bird.x) * 5 * dt;
-            if (Math.abs(this.bird.x - 100) < 1) {
-                this.bird.x = 100;
+            const targetX = this.scale.width * 0.15;
+            this.bird.x = this.bird.x + (targetX - this.bird.x) * 5 * dt;
+            if (Math.abs(this.bird.x - targetX) < 1) {
+                this.bird.x = targetX;
                 this.isTransitioning = false;
             }
         }
