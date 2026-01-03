@@ -20,6 +20,8 @@ export class Game extends Scene
     private highscoreText: Phaser.GameObjects.Text;
     private timeText: Phaser.GameObjects.Text;
     private centerText: Phaser.GameObjects.Text;
+    private titleChars: Phaser.GameObjects.Text[] = [];
+    private titleContainer: Phaser.GameObjects.Container;
     
     // State Variables
     private gameState: 'MENU' | 'START' | 'PLAYING' | 'GAMEOVER' = 'MENU';
@@ -123,6 +125,35 @@ export class Game extends Scene
         this.centerText = this.add.text(this.scale.width / 2, this.scale.height / 2, '', {
             fontFamily: 'Arial', fontSize: '40px', color: '#000000', align: 'center'
         }).setOrigin(0.5).setDepth(10);
+
+        // Title Animation Setup
+        this.titleContainer = this.add.container(this.scale.width / 2, this.scale.height / 2 - 150);
+        this.titleContainer.setDepth(10);
+        const titleStr = "Angry Flappy Bird";
+        const titleStyle = { fontFamily: 'Arial', fontSize: '60px', color: '#4488FF', stroke: '#000000', strokeThickness: 4 };
+        
+        let totalWidth = 0;
+        // Temporary text to measure characters? No, create them and measure.
+        // Or since it's variable width font, just stack them.
+        for (let i = 0; i < titleStr.length; i++) {
+            const char = titleStr[i];
+            const t = this.add.text(0, 0, char, titleStyle).setOrigin(0, 0.5); // Origin Left-Center for easier stacking
+            this.titleChars.push(t);
+            this.titleContainer.add(t);
+        }
+
+        // Layout
+        let cursorX = 0;
+        this.titleChars.forEach(t => {
+            t.x = cursorX;
+            cursorX += t.width;
+        });
+
+        // Center the group in the container
+        const fullWidth = cursorX;
+        this.titleChars.forEach(t => {
+            t.x -= fullWidth / 2;
+        });
 
         // Input Handling
         this.input.on('pointerdown', this.handleInputDown, this);
@@ -388,18 +419,29 @@ export class Game extends Scene
         // Menu Title Animation
         if (this.gameState === 'MENU') {
             this.menuTitleTimer += dt;
-            this.centerText.setText("Angry Flappy Bird\n\nDrag to Start!");
-            this.centerText.setY(this.scale.height / 2 + Math.sin(this.menuTitleTimer * 2) * 10);
-            this.centerText.setColor('#4488FF'); // Light Blueish for title
-        } else if (this.gameState === 'START') {
-             this.centerText.setText("Click and Drag to Launch!\nBest: " + this.highscore);
-             this.centerText.setY(this.scale.height / 2);
-             this.centerText.setColor('#000000');
-        } else if (this.gameState === 'GAMEOVER') {
-             this.centerText.setText(`GAME OVER\nScore: ${this.score}\nBest: ${this.highscore}\nClick to Restart`);
-             this.centerText.setColor('#000000');
+            
+            this.titleContainer.setVisible(true);
+            this.titleChars.forEach((t, i) => {
+                t.y = Math.sin(this.menuTitleTimer * 5 + i * 0.5) * 10;
+            });
+            
+            // Move centerText down a bit since Title is above
+            this.centerText.setText("Drag to Start!");
+            this.centerText.setY(this.scale.height / 2 + 60);
+            this.centerText.setColor('#000000');
         } else {
-             this.centerText.setText("");
+             this.titleContainer.setVisible(false);
+
+             if (this.gameState === 'START') {
+                 this.centerText.setText(`Click and Drag to Launch!\nBest: ${this.highscore}`);
+                 this.centerText.setY(this.scale.height / 2);
+                 this.centerText.setColor('#000000');
+            } else if (this.gameState === 'GAMEOVER') {
+                 this.centerText.setText(`GAME OVER\nScore: ${this.score}\nBest: ${this.highscore}\nClick to Restart`);
+                 this.centerText.setColor('#000000');
+            } else {
+                 this.centerText.setText("");
+            }
         }
 
 
