@@ -205,6 +205,11 @@ export class Game extends Scene
         this.bird.stop(); // Stop animation
         this.bird.setTexture('bird1');
 
+        // Reset Music Volume
+        if (this.music) {
+            (this.music as any).setVolume(0.5);
+        }
+
         // Clear Pipes
         this.pipes.forEach((p: any) => {
              if (p.topPipe) p.topPipe.destroy();
@@ -296,7 +301,8 @@ export class Game extends Scene
             if (this.gameState === 'MENU') {
                 this.gameState = 'PLAYING';
                 this.isTransitioning = true;
-                this.music.stop(); // Stop music when starting game
+                // Keep music playing but lower volume
+                (this.music as any).setVolume(0.2); 
             }
 
             // Launch Logic
