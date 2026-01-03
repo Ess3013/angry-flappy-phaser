@@ -471,6 +471,13 @@ export class Game extends Scene
 
                     this.soundScore.play();
                     
+                    // Floating Text
+                    let textMsg = `+${points} (+${timeBonus}s)`;
+                    if (this.pipesClearedInLaunch > 1) {
+                        textMsg += ` (x${this.pipesClearedInLaunch}!)`;
+                    }
+                    this.spawnFloatingText(this.bird.x, this.birdY - 30, textMsg);
+
                     if (this.score > this.highscore) {
                         this.highscore = this.score;
                         localStorage.setItem('highscore', this.highscore.toString());
@@ -485,6 +492,44 @@ export class Game extends Scene
                 }
             }
         }
+    }
+
+    spawnFloatingText(x: number, y: number, message: string) {
+        const text = this.add.text(x, y, message, {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
+        }).setOrigin(0.5);
+
+        this.tweens.add({
+            targets: text,
+            y: y - 50,
+            duration: 800,
+            ease: 'Linear'
+        });
+
+        this.tweens.add({
+            targets: text,
+            scaleX: 1.5,
+            scaleY: 1.5,
+            duration: 400,
+            yoyo: true,
+            ease: 'Sine.easeInOut',
+            onComplete: () => {
+                text.destroy();
+            }
+        });
+        
+        // Original had alpha fade out?
+        // "alpha = 1 - progress".
+        this.tweens.add({
+            targets: text,
+            alpha: 0,
+            duration: 800,
+            ease: 'Linear'
+        });
     }
 
     drawTrajectory(dx: number, dy: number)
