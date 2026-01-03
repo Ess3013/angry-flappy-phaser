@@ -13,6 +13,9 @@ const config: Types.Core.GameConfig = {
         mode: Scale.FIT,
         autoCenter: Scale.CENTER_BOTH
     },
+    input: {
+        activePointers: 3 // Enable multi-touch support just in case
+    },
     scene: [
         MainGame
     ]

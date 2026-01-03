@@ -1,7 +1,6 @@
 import { Scene } from 'phaser';
 
-export class Game extends Scene
-{
+export class Game extends Scene {
     // Game Constants
     private readonly GRAVITY = 400;
     private readonly DRAG = 0.3;
@@ -22,7 +21,7 @@ export class Game extends Scene
     private centerText: Phaser.GameObjects.Text;
     private titleChars: Phaser.GameObjects.Text[] = [];
     private titleContainer: Phaser.GameObjects.Container;
-    
+
     // State Variables
     private gameState: 'MENU' | 'START' | 'PLAYING' | 'GAMEOVER' = 'MENU';
     private score: number = 0;
@@ -32,7 +31,7 @@ export class Game extends Scene
     private distanceTraveled: number = 0;
     private nextPipeDist: number = 400;
     private pipesClearedInLaunch: number = 0;
-    
+
     // Background Scrolling
     private bgScrollX: number = 0;
 
@@ -41,7 +40,7 @@ export class Game extends Scene
     private birdVy: number;
     private birdAngle: number;
     private isAnimating: boolean = false;
-    
+
     // Aiming Variables
     private aiming = {
         active: false,
@@ -61,15 +60,13 @@ export class Game extends Scene
     private soundScore: Phaser.Sound.BaseSound;
     private music: Phaser.Sound.BaseSound;
 
-    constructor ()
-    {
+    constructor() {
         super('Game');
     }
 
-    preload ()
-    {
+    preload() {
         this.load.setPath('assets');
-        
+
         // Load Bird Sprites (frame-1 to frame-5)
         for (let i = 1; i <= 5; i++) {
             this.load.image(`bird${i}`, `sprites/bird/frame-${i}.png`);
@@ -83,11 +80,10 @@ export class Game extends Scene
         this.load.audio('score', 'audio/score.wav');
     }
 
-    create ()
-    {
+    create() {
         // 1. Create Background
         this.createBackgroundTexture();
-        this.bgTileSprite = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'bg_checker').setOrigin(0,0);
+        this.bgTileSprite = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'bg_checker').setOrigin(0, 0);
 
         // Initialize Graphics for drawing lines/shapes (Slingshot)
         this.graphics = this.add.graphics();
@@ -121,7 +117,7 @@ export class Game extends Scene
         this.scoreText = this.add.text(20, 20, 'Score: 0', uiStyle).setDepth(10);
         this.highscoreText = this.add.text(20, 50, 'Best: 0', uiStyle).setDepth(10);
         this.timeText = this.add.text(20, 80, 'Time: 30.0', uiStyle).setDepth(10);
-        
+
         this.centerText = this.add.text(this.scale.width / 2, this.scale.height / 2, '', {
             fontFamily: 'Arial', fontSize: '40px', color: '#000000', align: 'center'
         }).setOrigin(0.5).setDepth(10);
@@ -131,7 +127,7 @@ export class Game extends Scene
         this.titleContainer.setDepth(10);
         const titleStr = "Angry Flappy Bird";
         const titleStyle = { fontFamily: 'Arial', fontSize: '60px', color: '#4488FF', stroke: '#000000', strokeThickness: 4 };
-        
+
         let totalWidth = 0;
         // Temporary text to measure characters? No, create them and measure.
         // Or since it's variable width font, just stack them.
@@ -164,7 +160,7 @@ export class Game extends Scene
         this.soundJump = this.sound.add('jump');
         this.soundScore = this.sound.add('score');
         this.music = this.sound.add('music', { loop: true, volume: 0.5 });
-        
+
         // Play music only in Menu
         this.music.play();
 
@@ -172,7 +168,7 @@ export class Game extends Scene
         this.loadHighscore();
 
         this.resetGame();
-        
+
         // Override for Menu
         this.gameState = 'MENU';
         this.bird.x = this.scale.width / 2;
@@ -201,33 +197,31 @@ export class Game extends Scene
         }
     }
 
-    createBackgroundTexture()
-    {
+    createBackgroundTexture() {
         const cellSize = 40;
         const graphics = this.make.graphics({ x: 0, y: 0, add: false });
-        
+
         // Draw 2x2 grid
         // Top Left (Color A)
         graphics.fillStyle(0xF5F5DB);
         graphics.fillRect(0, 0, cellSize, cellSize);
-        
+
         // Top Right (Color B)
         graphics.fillStyle(0xEDE8D1);
         graphics.fillRect(cellSize, 0, cellSize, cellSize);
-        
+
         // Bottom Left (Color B)
         graphics.fillStyle(0xEDE8D1);
         graphics.fillRect(0, cellSize, cellSize, cellSize);
-        
+
         // Bottom Right (Color A)
         graphics.fillStyle(0xF5F5DB);
         graphics.fillRect(cellSize, cellSize, cellSize, cellSize);
-        
+
         graphics.generateTexture('bg_checker', 80, 80);
     }
 
-    resetGame()
-    {
+    resetGame() {
         this.bird.x = 100;
         this.birdY = 300;
         this.birdVy = 0;
@@ -238,13 +232,13 @@ export class Game extends Scene
 
         // Reset Music Volume
         if (this.music) {
-            (this.music as any).volume = 0.5;
+            (this.music as any).volume = 0.2;
         }
 
         // Clear Pipes
         this.pipes.forEach((p: any) => {
-             if (p.topPipe) p.topPipe.destroy();
-             if (p.bottomPipe) p.bottomPipe.destroy();
+            if (p.topPipe) p.topPipe.destroy();
+            if (p.bottomPipe) p.bottomPipe.destroy();
         });
         this.pipes = [];
 
@@ -260,16 +254,15 @@ export class Game extends Scene
 
         this.titleOffset = 0;
         this.isTransitioning = false;
-        
+
         this.updateUI();
     }
 
-    spawnPipe(xPos: number)
-    {
+    spawnPipe(xPos: number) {
         const minHeight = 100;
         const maxHeight = this.scale.height - this.PIPE_GAP - minHeight;
         const topHeight = Phaser.Math.Between(minHeight, maxHeight);
-        
+
         // Pipe Style
         const pipeColor = 0x33CC33;
         const strokeColor = 0x000000;
@@ -280,7 +273,7 @@ export class Game extends Scene
         const topPipe = this.add.rectangle(xPos, 0, this.PIPE_WIDTH, topHeight, pipeColor);
         topPipe.setOrigin(0, 0);
         topPipe.setStrokeStyle(strokeWidth, strokeColor);
-        
+
         // Bottom Pipe
         const bottomPipeY = topHeight + this.PIPE_GAP;
         const bottomPipeHeight = this.scale.height - bottomPipeY;
@@ -298,8 +291,7 @@ export class Game extends Scene
         });
     }
 
-    handleInputDown(pointer: Phaser.Input.Pointer)
-    {
+    handleInputDown(pointer: Phaser.Input.Pointer) {
         if (this.gameState === 'GAMEOVER') {
             this.resetGame();
             return;
@@ -316,16 +308,14 @@ export class Game extends Scene
         }
     }
 
-    handleInputMove(pointer: Phaser.Input.Pointer)
-    {
+    handleInputMove(pointer: Phaser.Input.Pointer) {
         if (this.aiming.active) {
             this.aiming.currentX = pointer.x;
             this.aiming.currentY = pointer.y;
         }
     }
 
-    handleInputUp(pointer: Phaser.Input.Pointer)
-    {
+    handleInputUp(pointer: Phaser.Input.Pointer) {
         if (this.aiming.active) {
             this.aiming.active = false;
 
@@ -352,7 +342,7 @@ export class Game extends Scene
             this.worldSpeed += dx * this.POWER_MULTIPLIER;
 
             this.pipesClearedInLaunch = 0;
-            
+
             this.soundJump.play();
             this.isAnimating = true;
             this.bird.play('fly');
@@ -360,14 +350,13 @@ export class Game extends Scene
             // Fade music to 0.1 on launch
             this.tweens.add({
                 targets: this.music,
-                volume: 0.1,
+                volume: 0.05,
                 duration: 1000
             });
         }
     }
 
-    update(time: number, delta: number)
-    {
+    update(time: number, delta: number) {
         const dt = delta / 1000; // Convert to seconds
 
         // Time Dilation
@@ -389,7 +378,7 @@ export class Game extends Scene
             let dx = this.aiming.startX - this.aiming.currentX;
             let dy = this.aiming.startY - this.aiming.currentY;
             if (dx < 0) dx = 0;
-            
+
             const len = Math.sqrt(dx * dx + dy * dy);
             let drawDx = dx;
             let drawDy = dy;
@@ -424,28 +413,28 @@ export class Game extends Scene
         // Menu Title Animation
         if (this.gameState === 'MENU') {
             this.menuTitleTimer += dt;
-            
+
             this.titleContainer.setVisible(true);
             this.titleChars.forEach((t, i) => {
                 t.y = Math.sin(this.menuTitleTimer * 5 + i * 0.5) * 10;
             });
-            
+
             // Move centerText down a bit since Title is above
             this.centerText.setText("Drag to Start!");
             this.centerText.setY(this.scale.height / 2 + 60);
             this.centerText.setColor('#000000');
         } else {
-             this.titleContainer.setVisible(false);
+            this.titleContainer.setVisible(false);
 
-             if (this.gameState === 'START') {
-                 this.centerText.setText(`Click and Drag to Launch!\nBest: ${this.highscore}`);
-                 this.centerText.setY(this.scale.height / 2);
-                 this.centerText.setColor('#000000');
+            if (this.gameState === 'START') {
+                this.centerText.setText(`Click and Drag to Launch!\nBest: ${this.highscore}`);
+                this.centerText.setY(this.scale.height / 2);
+                this.centerText.setColor('#000000');
             } else if (this.gameState === 'GAMEOVER') {
-                 this.centerText.setText(`GAME OVER\nScore: ${this.score}\nBest: ${this.highscore}\nClick to Restart`);
-                 this.centerText.setColor('#000000');
+                this.centerText.setText(`GAME OVER\nScore: ${this.score}\nBest: ${this.highscore}\nClick to Restart`);
+                this.centerText.setColor('#000000');
             } else {
-                 this.centerText.setText("");
+                this.centerText.setText("");
             }
         }
 
@@ -474,15 +463,15 @@ export class Game extends Scene
 
             // Animation Logic
             if (!this.isAnimating && (Math.abs(this.worldSpeed) > 50 || Math.abs(this.birdVy) > 10)) {
-                 // Should be animating
-            } 
+                // Should be animating
+            }
             // Simplified: if fly animation is playing, keep it. 
             // Original logic stopped animation if slow.
-             if (Math.abs(this.worldSpeed) < 50 && Math.abs(this.birdVy) < 10) {
-                 this.bird.stop();
-                 this.bird.setTexture('bird1');
-                 this.isAnimating = false;
-             }
+            if (Math.abs(this.worldSpeed) < 50 && Math.abs(this.birdVy) < 10) {
+                this.bird.stop();
+                this.bird.setTexture('bird1');
+                this.isAnimating = false;
+            }
 
             // Bounds Collision
             if (this.birdY < 0 || this.birdY > this.scale.height) {
@@ -504,7 +493,7 @@ export class Game extends Scene
             for (let i = this.pipes.length - 1; i >= 0; i--) {
                 const p: any = this.pipes[i];
                 p.x -= this.worldSpeed * gameDt;
-                
+
                 // Update sprite positions
                 p.topPipe.x = p.x;
                 p.bottomPipe.x = p.x;
@@ -543,7 +532,7 @@ export class Game extends Scene
                     this.timeLeft += timeBonus;
 
                     this.soundScore.play();
-                    
+
                     // Floating Text
                     let textMsg = `+${points} (+${timeBonus}s)`;
                     if (this.pipesClearedInLaunch > 1) {
@@ -594,7 +583,7 @@ export class Game extends Scene
                 text.destroy();
             }
         });
-        
+
         // Original had alpha fade out?
         // "alpha = 1 - progress".
         this.tweens.add({
@@ -605,45 +594,43 @@ export class Game extends Scene
         });
     }
 
-    drawTrajectory(dx: number, dy: number)
-    {
+    drawTrajectory(dx: number, dy: number) {
         this.graphics.lineStyle(2, 0xff0000, 0.6);
-        
+
         let simX = this.bird.x;
         let simY = this.bird.y;
         let simVy = dy * this.POWER_MULTIPLIER;
         let simWorldSpeed = this.worldSpeed + (dx * this.POWER_MULTIPLIER);
-        
-        const simDt = 1/60;
-        
+
+        const simDt = 1 / 60;
+
         for (let i = 0; i < 90; i++) {
             simVy += this.GRAVITY * simDt;
             simY += simVy * simDt;
-            
+
             simWorldSpeed -= (simWorldSpeed * this.DRAG * simDt);
             if (Math.abs(simWorldSpeed) < 1) simWorldSpeed = 0;
-            
+
             simX += simWorldSpeed * simDt;
 
             if (i % 3 === 0) {
                 this.graphics.fillCircle(simX, simY, 3);
             }
-            
-             if (simY > this.scale.height || simY < 0 || simX > this.scale.width) {
+
+            if (simY > this.scale.height || simY < 0 || simX > this.scale.width) {
                 break;
             }
         }
     }
 
-    setGameOver()
-    {
+    setGameOver() {
         if (this.gameState !== 'GAMEOVER') {
             this.gameState = 'GAMEOVER';
-            
+
             // Fade music back to 0.5
             this.tweens.add({
                 targets: this.music,
-                volume: 0.5,
+                volume: 0.2,
                 duration: 1000
             });
 
@@ -654,12 +641,11 @@ export class Game extends Scene
         }
     }
 
-    updateUI()
-    {
+    updateUI() {
         this.scoreText.setText(`Score: ${this.score}`);
         this.highscoreText.setText(`Best: ${this.highscore}`);
         this.timeText.setText(`Time: ${this.timeLeft.toFixed(1)}`);
-        
+
         if (this.timeLeft < 5) {
             this.timeText.setColor('#ff0000');
         } else {
