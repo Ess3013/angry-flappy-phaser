@@ -238,7 +238,7 @@ export class Game extends Scene
 
         // Reset Music Volume
         if (this.music) {
-            (this.music as any).setVolume(0.5);
+            (this.music as any).volume = 0.5;
         }
 
         // Clear Pipes
@@ -332,8 +332,6 @@ export class Game extends Scene
             if (this.gameState === 'MENU') {
                 this.gameState = 'PLAYING';
                 this.isTransitioning = true;
-                // Keep music playing but lower volume
-                (this.music as any).setVolume(0.2); 
             }
 
             // Launch Logic
@@ -358,6 +356,13 @@ export class Game extends Scene
             this.soundJump.play();
             this.isAnimating = true;
             this.bird.play('fly');
+
+            // Fade music to 0.1 on launch
+            this.tweens.add({
+                targets: this.music,
+                volume: 0.1,
+                duration: 1000
+            });
         }
     }
 
@@ -634,6 +639,14 @@ export class Game extends Scene
     {
         if (this.gameState !== 'GAMEOVER') {
             this.gameState = 'GAMEOVER';
+            
+            // Fade music back to 0.5
+            this.tweens.add({
+                targets: this.music,
+                volume: 0.5,
+                duration: 1000
+            });
+
             if (this.score > this.highscore) {
                 this.highscore = this.score;
                 this.saveHighscore();
