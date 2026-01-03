@@ -133,13 +133,12 @@ export class Game extends Scene
         this.soundJump = this.sound.add('jump');
         this.soundScore = this.sound.add('score');
         this.music = this.sound.add('music', { loop: true, volume: 0.5 });
+        
+        // Play music only in Menu
         this.music.play();
 
         // Load Highscore
-        const storedScore = localStorage.getItem('highscore');
-        if (storedScore) {
-            this.highscore = parseInt(storedScore, 10);
-        }
+        this.loadHighscore();
 
         this.resetGame();
         
@@ -148,6 +147,27 @@ export class Game extends Scene
         this.bird.x = this.scale.width / 2;
         this.bird.y = this.scale.height / 2;
         this.birdY = this.bird.y; // Sync physics var
+    }
+
+    loadHighscore() {
+        try {
+            const storedScore = localStorage.getItem('angry-flappy-highscore');
+            if (storedScore) {
+                this.highscore = parseInt(storedScore, 10);
+            } else {
+                this.highscore = 0;
+            }
+        } catch (e) {
+            console.warn('Could not load highscore:', e);
+        }
+    }
+
+    saveHighscore() {
+        try {
+            localStorage.setItem('angry-flappy-highscore', this.highscore.toString());
+        } catch (e) {
+            console.warn('Could not save highscore:', e);
+        }
     }
 
     createBackgroundTexture()
@@ -276,7 +296,7 @@ export class Game extends Scene
             if (this.gameState === 'MENU') {
                 this.gameState = 'PLAYING';
                 this.isTransitioning = true;
-                // this.music.stop(); // Love2D logic stopped music? Maybe keep it.
+                this.music.stop(); // Stop music when starting game
             }
 
             // Launch Logic
@@ -480,7 +500,7 @@ export class Game extends Scene
 
                     if (this.score > this.highscore) {
                         this.highscore = this.score;
-                        localStorage.setItem('highscore', this.highscore.toString());
+                        this.saveHighscore();
                     }
                 }
 
@@ -568,7 +588,7 @@ export class Game extends Scene
             this.gameState = 'GAMEOVER';
             if (this.score > this.highscore) {
                 this.highscore = this.score;
-                localStorage.setItem('highscore', this.highscore.toString());
+                this.saveHighscore();
             }
         }
     }
